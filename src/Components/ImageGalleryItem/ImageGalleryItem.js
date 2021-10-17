@@ -1,35 +1,32 @@
-import React from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import Modal from '../Modal';
 import s from './ImageGalleryItem.module.css';
 
-class ImageGalleryItem extends React.Component {
-  state = {
-    showModal: false,
+function ImageGalleryItem({ array }) {
+  const [showModal, setshowModal] = useState(false);
+
+  const openModal = e => {
+    setshowModal(e.target.dataset.set);
   };
 
-  openModal = e => {
-    this.setState({ showModal: e.target.dataset.set });
+  const closeModal = () => {
+    setshowModal(false);
   };
 
-  closeModal = () => {
-    this.setState({ showModal: false });
-  };
-
-  render() {
-    return (
-      <>
-        {this.props.array.map(element => {
-          return (
-            <li className={s.card} key={element.id}>
-              <img
-                onClick={this.openModal}
-                className={s.image}
-                src={element.webformatURL}
-                alt={element.id}
-                data-set={element.largeImageURL}
-              />
-              {/* <div className={s.stats}>
+  return (
+    <>
+      {array.map(element => {
+        return (
+          <li className={s.card} key={element.id}>
+            <img
+              onClick={openModal}
+              className={s.image}
+              src={element.webformatURL}
+              alt={element.id}
+              data-set={element.largeImageURL}
+            />
+            {/* <div className={s.stats}>
                 <p className={s.item}>
                   <i className={s.icons}>thumb_up</i>
                   {element.likes}
@@ -47,21 +44,16 @@ class ImageGalleryItem extends React.Component {
                   {element.downloads}
                 </p>
               </div> */}
-            </li>
-          );
-        })}
-        {this.state.showModal && (
-          <Modal closeModal={this.closeModal}>
-            <img
-              src={this.state.showModal}
-              alt="modal_picture"
-              className={s.bigimg}
-            />
-          </Modal>
-        )}
-      </>
-    );
-  }
+          </li>
+        );
+      })}
+      {showModal && (
+        <Modal closeModal={closeModal}>
+          <img src={showModal} alt="modal_picture" className={s.bigimg} />
+        </Modal>
+      )}
+    </>
+  );
 }
 
 ImageGalleryItem.protoType = {

@@ -1,25 +1,21 @@
-import React from 'react';
+import { useState } from 'react';
 import Container from './Components/Container';
 import Searchbar from './Components/Searchbar';
 import ImageGallery from './Components/ImageGallery';
 
-class App extends React.Component {
-  state = {
-    searchValue: '',
+function App() {
+  const [searchValue, setSearchValue] = useState('');
+
+  const changeSearchValue = value => {
+    setSearchValue(value);
   };
 
-  changeSearchValue = value => {
-    this.setState({ searchValue: value });
-  };
-
-  render() {
-    return (
-      <Container>
-        <Searchbar onSubmit={this.changeSearchValue} />
-        <ImageGallery searchValue={this.state.searchValue} />
-      </Container>
-    );
-  }
+  return (
+    <Container>
+      <Searchbar onSubmit={changeSearchValue} />
+      <ImageGallery searchValue={searchValue} />
+    </Container>
+  );
 }
 
 export default App;

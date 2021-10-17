@@ -1,40 +1,40 @@
-import React from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 import s from './Modal.module.css';
 
-class Modal extends React.Component {
-  componentDidMount() {
-    document.addEventListener('keydown', this.escFunction, false);
-  }
+function Modal({ closeModal, children }) {
+  useEffect(() => {
+    document.addEventListener('keydown', escFunction, false);
 
-  componentWillUnmount() {
-    document.removeEventListener('keydown', this.escFunction, false);
-  }
+    // returned function will be called on component unmount
+    return () => {
+      document.removeEventListener('keydown', escFunction, false);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  escFunction = e => {
+  const escFunction = e => {
     if (e.keyCode === 27) {
-      this.props.closeModal();
+      closeModal();
     }
   };
 
-  render() {
-    return createPortal(
-      <div
-        className={s.backdrop}
-        onClick={e => {
-          if (e.target.nodeName === 'IMG') {
-            return;
-          }
+  return createPortal(
+    <div
+      className={s.backdrop}
+      onClick={e => {
+        if (e.target.nodeName === 'IMG') {
+          return;
+        }
 
-          this.props.closeModal();
-        }}
-      >
-        <div className={s.window}>{this.props.children}</div>
-      </div>,
-      document.getElementById('modal-root'),
-    );
-  }
+        closeModal();
+      }}
+    >
+      <div className={s.window}>{children}</div>
+    </div>,
+    document.getElementById('modal-root'),
+  );
 }
 
 Modal.protoType = {

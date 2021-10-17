@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import ImageGalleryItem from '../ImageGalleryItem';
 import RequestAPI from '../../services/apiService';
@@ -10,44 +10,46 @@ import s from './ImageGallery.module.css';
 
 const newRequestAPI = new RequestAPI();
 
-class ImageGallery extends React.Component {
-  state = {
-    images: [],
-    status: 'idle',
-  };
+function ImageGallery({ searchValue }) {
+  const [images, setImages] = useState([]);
+  const [status, setStatus] = useState('idle');
 
-  componentDidUpdate(prevProps, prevState) {
-    const prevName = prevProps.searchValue;
-    const nextName = this.props.searchValue;
+  useEffect(() => {
+    if (searchValue === '') {
+      return;
+    }
 
-    if (prevName !== nextName) {
-      this.setState({ status: 'pending' });
+    setStatus('pending');
 
-      newRequestAPI.value = nextName;
-      newRequestAPI.resetPage();
-      newRequestAPI.getData().then(result => {
+    newRequestAPI.value = searchValue;
+    newRequestAPI.resetPage();
+    newRequestAPI
+      .getData()
+      .then(result => {
         if (result.hits.length !== 0) {
-          return this.setState({ images: result.hits, status: 'resolved' });
+          setImages(result.hits);
+          setStatus('resolved');
+          return;
         }
 
-        return this.setState({ images: result.hits, status: 'rejected' });
-      });
-    }
-  }
+        setImages(result.hits);
+        setStatus('rejected');
+        return result;
+      })
+      .catch(err => console.warn(err));
+  }, [searchValue]);
 
-  addImages = () => {
-    this.setState({ status: 'pending' });
+  const addImages = () => {
+    setStatus('pending');
 
     newRequestAPI
       .getData()
       .then(result => {
-        this.setState(prevState => {
-          return {
-            images: [...prevState.images, ...result.hits],
-            status: 'resolved',
-          };
-        });
+        setImages([...images, ...result.hits]);
+        setStatus('resolved');
+        return result;
       })
+      .catch(err => console.warn(err))
       .finally(() => {
         setTimeout(() => {
           window.scrollTo({
@@ -58,39 +60,34 @@ class ImageGallery extends React.Component {
       });
   };
 
-  render() {
-    const { images, status } = this.state;
-    const { searchValue } = this.props;
+  if (status === 'idle') {
+    return <IdleMessage />;
+  }
 
-    if (status === 'idle') {
-      return <IdleMessage />;
-    }
+  if (status === 'pending') {
+    return (
+      <>
+        <ul className={s.gallery}>
+          <ImageGalleryItem array={images} />
+        </ul>
+        <Loader />;
+      </>
+    );
+  }
 
-    if (status === 'pending') {
-      return (
-        <>
-          <ul className={s.gallery}>
-            <ImageGalleryItem array={images} />
-          </ul>
-          <Loader />;
-        </>
-      );
-    }
+  if (status === 'rejected') {
+    return <NotFound value={searchValue} />;
+  }
 
-    if (status === 'rejected') {
-      return <NotFound value={searchValue} />;
-    }
-
-    if (status === 'resolved') {
-      return (
-        <>
-          <ul className={s.gallery}>
-            <ImageGalleryItem array={images} />
-          </ul>
-          <Button addImages={this.addImages} />
-        </>
-      );
-    }
+  if (status === 'resolved') {
+    return (
+      <>
+        <ul className={s.gallery}>
+          <ImageGalleryItem array={images} />
+        </ul>
+        <Button addImages={addImages} />
+      </>
+    );
   }
 }
 
